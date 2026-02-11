@@ -1,0 +1,927 @@
+// AI Art Revenue Exchange - Enterprise Database Schema
+// Zero-Trust Security Model with Financial-Grade Data Integrity
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [pgcrypto, uuid_ossp]
+}
+
+// ==================== CORE USER MANAGEMENT ====================
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  emailHash             String    @unique @map("email_hash")
+  passwordHash          String    @map("password_hash")
+  username              String    @unique
+  displayName           String?   @map("display_name")
+  
+  // Profile
+  avatarUrl             String?   @map("avatar_url")
+  bio                   String?   @db.Text
+  website               String?
+  
+  // Verification Status
+  isEmailVerified       Boolean   @default(false) @map("is_email_verified")
+  emailVerifiedAt       DateTime? @map("email_verified_at")
+  
+  // Role & Permissions
+  role                  UserRole  @default(USER)
+  isActive              Boolean   @default(true) @map("is_active")
+  isBanned              Boolean   @default(false) @map("is_banned")
+  banReason             String?   @map("ban_reason")
+  bannedAt              DateTime? @map("banned_at")
+  
+  // Data Privacy
+  dataSharingEnabled    Boolean   @default(true) @map("data_sharing_enabled")
+  dataSharingChangedAt  DateTime? @map("data_sharing_changed_at")
+  
+  // Mature Content Access
+  isAgeVerified         Boolean   @default(false) @map("is_age_verified")
+  ageVerifiedAt         DateTime? @map("age_verified_at")
+  matureAccessEnabled   Boolean   @default(false) @map("mature_access_enabled")
+  matureAccessGrantedAt DateTime? @map("mature_access_granted_at")
+  maturePasswordHash    String?   @map("mature_password_hash")
+  
+  // Legal Compliance
+  acceptedTermsAt       DateTime? @map("accepted_terms_at")
+  acceptedPrivacyAt     DateTime? @map("accepted_privacy_at")
+  acceptedDataPolicyAt  DateTime? @map("accepted_data_policy_at")
+  acceptedMatureTermsAt DateTime? @map("accepted_mature_terms_at")
+  
+  // Security
+  mfaEnabled            Boolean   @default(false) @map("mfa_enabled")
+  mfaSecret             String?   @map("mfa_secret")
+  lastLoginAt           DateTime? @map("last_login_at")
+  lastLoginIp           String?   @map("last_login_ip")
+  failedLoginAttempts   Int       @default(0) @map("failed_login_attempts")
+  lockedUntil           DateTime? @map("locked_until")
+  
+  // Metadata
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
+  
+  // Relations
+  assets                Asset[]
+  bids                  Bid[]
+  wallet                Wallet?
+  transactions          Transaction[]
+  ledgerEntries         LedgerEntry[]
+  inGameTransactions    InGameTransaction[]
+  generationCounters    GenerationCounter?
+  contentReports        ContentReport[] @relation("ReportedBy")
+  reportedContent       ContentReport[] @relation("ReportedUser")
+  moderationLogs        ModerationLog[]
+  ageVerificationRecord AgeVerificationRecord?
+  consentHistory        ConsentHistory[]
+  referralsMade         Referral[] @relation("Referrer")
+  referralsReceived     Referral[] @relation("Referred")
+  dailyLogins           DailyLogin[]
+  challengeCompletions  ChallengeCompletion[]
+  
+  @@index([emailHash])
+  @@index([username])
+  @@index([role])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model AgeVerificationRecord {
+  id                String    @id @default(uuid())
+  userId            String    @unique @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Verification Method
+  method            VerificationMethod
+  documentType      String?   @map("document_type")
+  documentNumberHash String?  @map("document_number_hash")
+  verifiedBy        String?   @map("verified_by")
+  
+  // Verification Data (encrypted)
+  verificationData  String?   @map("verification_data")
+  
+  // Status
+  status            VerificationStatus @default(PENDING)
+  attemptedAt       DateTime  @default(now()) @map("attempted_at")
+  verifiedAt        DateTime? @map("verified_at")
+  rejectedAt        DateTime? @map("rejected_at")
+  rejectionReason   String?   @map("rejection_reason")
+  
+  // Audit
+  ipAddress         String?   @map("ip_address")
+  userAgent         String?   @map("user_agent")
+  
+  @@index([userId])
+  @@index([status])
+  @@map("age_verification_records")
+}
+
+model ConsentHistory {
+  id          String       @id @default(uuid())
+  userId      String       @map("user_id")
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  consentType ConsentType
+  action      ConsentAction
+  ipAddress   String?      @map("ip_address")
+  userAgent   String?      @map("user_agent")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@index([consentType])
+  @@map("consent_history")
+}
+
+// ==================== ASSET MANAGEMENT ====================
+
+model Asset {
+  id                  String       @id @default(uuid())
+  
+  // Ownership
+  creatorId           String       @map("creator_id")
+  creator             User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  ownershipType       OwnershipType @default(USER) @map("ownership_type")
+  claimedByAdminAt    DateTime?    @map("claimed_by_admin_at")
+  
+  // Asset Details
+  title               String
+  description         String?      @db.Text
+  prompt              String?      @db.Text
+  negativePrompt      String?      @map("negative_prompt") @db.Text
+  
+  // Media
+  imageUrl            String       @map("image_url")
+  thumbnailUrl        String?      @map("thumbnail_url")
+  watermarkUrl        String?      @map("watermark_url")
+  
+  // Metadata
+  width               Int
+  height              Int
+  fileSize            Int          @map("file_size")
+  mimeType            String       @map("mime_type")
+  
+  // AI Generation Data
+  generationParams    Json?        @map("generation_params")
+  modelUsed           String?      @map("model_used")
+  seed                String?
+  
+  // Content Classification
+  isMature            Boolean      @default(false) @map("is_mature")
+  maturityScore       Float?       @map("maturity_score")
+  contentWarnings     String[]     @map("content_warnings")
+  
+  // Status
+  status              AssetStatus  @default(GENERATING)
+  moderationStatus    ModerationStatus @default(PENDING) @map("moderation_status")
+  
+  // Sale Configuration
+  isForSale           Boolean      @default(false) @map("is_for_sale")
+  saleType            SaleType?    @map("sale_type")
+  buyNowPrice         Decimal?     @map("buy_now_price") @db.Decimal(19, 8)
+  
+  // Statistics
+  viewCount           Int          @default(0) @map("view_count")
+  likeCount           Int          @default(0) @map("like_count")
+  downloadCount       Int          @default(0) @map("download_count")
+  
+  // Timestamps
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+  publishedAt         DateTime?    @map("published_at")
+  
+  // Relations
+  auctions            Auction[]
+  transactions        Transaction[]
+  contentReports      ContentReport[]
+  moderationLogs      ModerationLog[]
+  
+  @@index([creatorId])
+  @@index([ownershipType])
+  @@index([status])
+  @@index([isForSale])
+  @@index([isMature])
+  @@index([createdAt])
+  @@map("assets")
+}
+
+model GenerationCounter {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  totalGenerated  Int      @default(0) @map("total_generated")
+  adminClaimed    Int      @default(0) @map("admin_claimed")
+  lastResetAt     DateTime @default(now()) @map("last_reset_at")
+  
+  @@index([userId])
+  @@map("generation_counters")
+}
+
+// ==================== MARKETPLACE ====================
+
+model Auction {
+  id                String        @id @default(uuid())
+  
+  // Asset
+  assetId           String        @map("asset_id")
+  asset             Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  // Auction Configuration
+  startingPrice     Decimal       @map("starting_price") @db.Decimal(19, 8)
+  reservePrice      Decimal?      @map("reserve_price") @db.Decimal(19, 8)
+  buyNowPrice       Decimal?      @map("buy_now_price") @db.Decimal(19, 8)
+  
+  // Timing
+  startsAt          DateTime      @map("starts_at")
+  endsAt            DateTime      @map("ends_at")
+  extendedUntil     DateTime?     @map("extended_until")
+  
+  // Status
+  status            AuctionStatus @default(DRAFT)
+  
+  // Current State
+  currentPrice      Decimal?      @map("current_price") @db.Decimal(19, 8)
+  currentBidderId   String?       @map("current_bidder_id")
+  bidCount          Int           @default(0) @map("bid_count")
+  
+  // Result
+  finalPrice        Decimal?      @map("final_price") @db.Decimal(19, 8)
+  winnerId          String?       @map("winner_id")
+  settledAt         DateTime?     @map("settled_at")
+  
+  // Metadata
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  createdBy         String        @map("created_by")
+  
+  // Relations
+  bids              Bid[]
+  
+  @@index([assetId])
+  @@index([status])
+  @@index([endsAt])
+  @@map("auctions")
+}
+
+model Bid {
+  id          String   @id @default(uuid())
+  
+  auctionId   String   @map("auction_id")
+  auction     Auction  @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  
+  bidderId    String   @map("bidder_id")
+  bidder      User     @relation(fields: [bidderId], references: [id], onDelete: Cascade)
+  
+  amount      Decimal  @db.Decimal(19, 8)
+  isAutoBid   Boolean  @default(false) @map("is_auto_bid")
+  maxBid      Decimal? @map("max_bid") @db.Decimal(19, 8)
+  
+  status      BidStatus @default(ACTIVE)
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  @@index([auctionId])
+  @@index([bidderId])
+  @@index([createdAt])
+  @@map("bids")
+}
+
+// ==================== FINANCIAL SYSTEM ====================
+
+model Wallet {
+  id              String   @id @default(uuid())
+  
+  userId          String   @unique @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Wallet Types
+  type            WalletType @default(USER)
+  
+  // Balances (in smallest unit, e.g., cents)
+  fiatBalance     Decimal  @default(0) @map("fiat_balance") @db.Decimal(19, 8)
+  tokenBalance    BigInt   @default(0) @map("token_balance")
+  
+  // Security
+  isFrozen        Boolean  @default(false) @map("is_frozen")
+  frozenAt        DateTime? @map("frozen_at")
+  freezeReason    String?  @map("freeze_reason")
+  
+  // Metadata
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  outgoingTransactions Transaction[] @relation("FromWallet")
+  incomingTransactions Transaction[] @relation("ToWallet")
+  
+  @@index([userId])
+  @@index([type])
+  @@map("wallets")
+}
+
+model Transaction {
+  id                String          @id @default(uuid())
+  
+  // Transaction Type
+  type              TransactionType
+  subType           String?         @map("sub_type")
+  
+  // Parties
+  fromWalletId      String?         @map("from_wallet_id")
+  fromWallet        Wallet?         @relation("FromWallet", fields: [fromWalletId], references: [id])
+  toWalletId        String?         @map("to_wallet_id")
+  toWallet          Wallet?         @relation("ToWallet", fields: [toWalletId], references: [id])
+  
+  // Related Entities
+  userId            String          @map("user_id")
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId           String?         @map("asset_id")
+  asset             Asset?          @relation(fields: [assetId], references: [id])
+  auctionId         String?         @map("auction_id")
+  
+  // Amounts
+  fiatAmount        Decimal?        @map("fiat_amount") @db.Decimal(19, 8)
+  tokenAmount       BigInt?         @map("token_amount")
+  
+  // Currency
+  currency          String          @default("USD")
+  
+  // Status
+  status            TransactionStatus @default(PENDING)
+  
+  // Processing
+  processedAt       DateTime?       @map("processed_at")
+  processedBy       String?         @map("processed_by")
+  
+  // External References
+  stripePaymentId   String?         @map("stripe_payment_id")
+  stripeRefundId    String?         @map("stripe_refund_id")
+  
+  // Security
+  idempotencyKey    String?         @unique @map("idempotency_key")
+  ipAddress         String?         @map("ip_address")
+  userAgent         String?         @map("user_agent")
+  
+  // Metadata
+  metadata          Json?
+  description       String?
+  
+  // Timestamps
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  
+  // Relations
+  ledgerEntries     LedgerEntry[]
+  
+  @@index([userId])
+  @@index([fromWalletId])
+  @@index([toWalletId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([idempotencyKey])
+  @@map("transactions")
+}
+
+model LedgerEntry {
+  id                String    @id @default(uuid())
+  
+  // Reference
+  transactionId     String    @map("transaction_id")
+  transaction       Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  
+  // Account
+  walletId          String?   @map("wallet_id")
+  wallet            Wallet?   @relation(fields: [walletId], references: [id])
+  
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Entry Type
+  entryType         LedgerEntryType @map("entry_type")
+  
+  // Amounts (Debits are positive, Credits are negative for assets)
+  fiatDebit         Decimal?  @map("fiat_debit") @db.Decimal(19, 8)
+  fiatCredit        Decimal?  @map("fiat_credit") @db.Decimal(19, 8)
+  tokenDebit        BigInt?   @map("token_debit")
+  tokenCredit       BigInt?   @map("token_credit")
+  
+  // Running Balance
+  fiatBalance       Decimal   @map("fiat_balance") @db.Decimal(19, 8)
+  tokenBalance      BigInt    @map("token_balance")
+  
+  // Integrity
+  entryHash         String    @map("entry_hash")
+  previousHash      String?   @map("previous_hash")
+  
+  // Description
+  description       String
+  
+  // Timestamp
+  createdAt         DateTime  @default(now()) @map("created_at")
+  
+  @@index([transactionId])
+  @@index([walletId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("ledger_entries")
+}
+
+// ==================== IN-GAME TOKEN SYSTEM ====================
+
+model InGameTransaction {
+  id            String              @id @default(uuid())
+  
+  userId        String              @map("user_id")
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Transaction Details
+  type          InGameTransactionType
+  amount        BigInt
+  
+  // Source
+  source        TokenSource
+  sourceId      String?             @map("source_id")
+  
+  // Usage
+  usedFor       String?             @map("used_for")
+  usedAmount    BigInt?             @map("used_amount")
+  
+  // Status
+  status        InGameTxStatus      @default(COMPLETED)
+  
+  // Expiration (for earned tokens)
+  expiresAt     DateTime?           @map("expires_at")
+  
+  // Metadata
+  description   String?
+  metadata      Json?
+  
+  createdAt     DateTime            @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@index([type])
+  @@index([source])
+  @@map("in_game_transactions")
+}
+
+model DailyLogin {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  loginDate   DateTime @map("login_date") @db.Date
+  tokensAwarded BigInt @map("tokens_awarded")
+  
+  streakDay   Int      @default(1) @map("streak_day")
+  
+  ipAddress   String?  @map("ip_address")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  @@unique([userId, loginDate])
+  @@index([userId])
+  @@map("daily_logins")
+}
+
+model Challenge {
+  id            String    @id @default(uuid())
+  
+  title         String
+  description   String    @db.Text
+  
+  // Requirements
+  requirement   String
+  targetValue   Int       @map("target_value")
+  
+  // Rewards
+  tokenReward   BigInt    @map("token_reward")
+  
+  // Timing
+  startsAt      DateTime  @map("starts_at")
+  endsAt        DateTime? @map("ends_at")
+  
+  // Status
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  completions   ChallengeCompletion[]
+  
+  @@index([isActive])
+  @@index([startsAt])
+  @@map("challenges")
+}
+
+model ChallengeCompletion {
+  id          String    @id @default(uuid())
+  
+  challengeId String    @map("challenge_id")
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  progress    Int       @default(0)
+  completedAt DateTime? @map("completed_at")
+  
+  tokensAwarded BigInt? @map("tokens_awarded")
+  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  @@unique([challengeId, userId])
+  @@index([userId])
+  @@map("challenge_completions")
+}
+
+model Referral {
+  id          String   @id @default(uuid())
+  
+  referrerId  String   @map("referrer_id")
+  referrer    User     @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  
+  referredId  String   @unique @map("referred_id")
+  referred    User     @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+  
+  // Rewards
+  referrerTokensAwarded BigInt? @map("referrer_tokens_awarded")
+  referredTokensAwarded BigInt? @map("referred_tokens_awarded")
+  
+  // Status
+  convertedAt DateTime? @map("converted_at")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  @@index([referrerId])
+  @@map("referrals")
+}
+
+// ==================== AD REVENUE SYSTEM ====================
+
+model AdRevenueLog {
+  id              String   @id @default(uuid())
+  
+  // Ad Details
+  adNetwork       String   @map("ad_network")
+  adUnit          String?  @map("ad_unit")
+  campaignId      String?  @map("campaign_id")
+  
+  // Revenue
+  amount          Decimal  @db.Decimal(19, 8)
+  currency        String   @default("USD")
+  
+  // Impressions/Metrics
+  impressions     Int?
+  clicks          Int?
+  ctr             Float?
+  
+  // Time Period
+  periodStart     DateTime @map("period_start")
+  periodEnd       DateTime @map("period_end")
+  
+  // Processing
+  processedAt     DateTime @default(now()) @map("processed_at")
+  processedBy     String   @map("processed_by")
+  
+  // External Reference
+  externalId      String?  @map("external_id")
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  @@index([adNetwork])
+  @@index([periodStart])
+  @@map("ad_revenue_logs")
+}
+
+// ==================== DATA MONETIZATION ====================
+
+model DataUsageLog {
+  id            String       @id @default(uuid())
+  
+  userId        String?      @map("user_id")
+  
+  // Data Type
+  dataType      DataType     @map("data_type")
+  
+  // Usage Details
+  action        String
+  description   String?
+  
+  // Consent Status
+  consentGiven  Boolean      @map("consent_given")
+  
+  // Anonymization
+  isAnonymized  Boolean      @default(false) @map("is_anonymized")
+  
+  // Metadata
+  metadata      Json?
+  
+  // Audit
+  ipAddress     String?      @map("ip_address")
+  userAgent     String?      @map("user_agent")
+  
+  createdAt     DateTime     @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@index([dataType])
+  @@index([createdAt])
+  @@map("data_usage_logs")
+}
+
+model DataMonetizationSale {
+  id              String   @id @default(uuid())
+  
+  // Dataset Details
+  datasetName     String   @map("dataset_name")
+  description     String?  @db.Text
+  
+  // Data Composition
+  recordCount     Int      @map("record_count")
+  userCount       Int      @map("user_count")
+  dataTypes       DataType[]
+  
+  // Sale Details
+  buyerName       String   @map("buyer_name")
+  buyerType       String   @map("buyer_type")
+  
+  // Financial
+  saleAmount      Decimal  @map("sale_amount") @db.Decimal(19, 8)
+  currency        String   @default("USD")
+  
+  // Processing
+  processedAt     DateTime @default(now()) @map("processed_at")
+  processedBy     String   @map("processed_by")
+  
+  // Legal
+  contractUrl     String?  @map("contract_url")
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  @@map("data_monetization_sales")
+}
+
+// ==================== MODERATION SYSTEM ====================
+
+model ContentReport {
+  id              String       @id @default(uuid())
+  
+  // Reporter
+  reporterId      String       @map("reporter_id")
+  reporter        User         @relation("ReportedBy", fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  // Reported Content
+  reportedUserId  String?      @map("reported_user_id")
+  reportedUser    User?        @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
+  
+  assetId         String?      @map("asset_id")
+  asset           Asset?       @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  // Report Details
+  reportType      ReportType   @map("report_type")
+  reason          String       @db.Text
+  
+  // Status
+  status          ReportStatus @default(PENDING)
+  
+  // Resolution
+  resolvedBy      String?      @map("resolved_by")
+  resolvedAt      DateTime?    @map("resolved_at")
+  resolution      String?      @db.Text
+  actionTaken     String?      @map("action_taken")
+  
+  createdAt       DateTime     @default(now()) @map("created_at")
+  
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([assetId])
+  @@index([status])
+  @@map("content_reports")
+}
+
+model ModerationLog {
+  id            String          @id @default(uuid())
+  
+  // Moderator
+  moderatorId   String          @map("moderator_id")
+  
+  // Target
+  userId        String?         @map("user_id")
+  user          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  assetId       String?         @map("asset_id")
+  asset         Asset?          @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  // Action
+  action        ModerationAction
+  reason        String          @db.Text
+  
+  // AI Moderation
+  aiScore       Float?          @map("ai_score")
+  aiFlags       String[]
+  
+  // Manual Review
+  reviewedBy    String?         @map("reviewed_by")
+  reviewedAt    DateTime?       @map("reviewed_at")
+  
+  createdAt     DateTime        @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@index([assetId])
+  @@index([action])
+  @@map("moderation_logs")
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  USER
+  CREATOR
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum VerificationMethod {
+  DOCUMENT_UPLOAD
+  THIRD_PARTY
+  MANUAL_REVIEW
+  BIOMETRIC
+}
+
+enum VerificationStatus {
+  PENDING
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum ConsentType {
+  TERMS_OF_SERVICE
+  PRIVACY_POLICY
+  DATA_SHARING
+  MATURE_CONTENT
+  AGE_VERIFICATION
+  MARKETING
+}
+
+enum ConsentAction {
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  UPDATED
+}
+
+enum OwnershipType {
+  USER
+  ADMIN
+}
+
+enum AssetStatus {
+  GENERATING
+  PROCESSING
+  ACTIVE
+  HIDDEN
+  SOLD
+  REMOVED
+  UNDER_REVIEW
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+  UNDER_REVIEW
+}
+
+enum SaleType {
+  AUCTION
+  BUY_NOW
+  BOTH
+}
+
+enum AuctionStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  ENDED
+  SETTLED
+  CANCELLED
+}
+
+enum BidStatus {
+  ACTIVE
+  OUTBID
+  WON
+  CANCELLED
+}
+
+enum WalletType {
+  USER
+  ADMIN_UPKEEP
+  PLATFORM
+  ESCROW
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  SALE
+  PURCHASE
+  FEE
+  REFUND
+  TRANSFER
+  TOKEN_PURCHASE
+  TOKEN_USE
+  AD_REVENUE
+  ADMIN_CLAIM
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+enum LedgerEntryType {
+  DEBIT
+  CREDIT
+}
+
+enum InGameTransactionType {
+  EARNED
+  SPENT
+  TRANSFERRED
+  EXPIRED
+  BONUS
+}
+
+enum InGameTxStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+enum TokenSource {
+  DAILY_LOGIN
+  CHALLENGE
+  REFERRAL
+  ENGAGEMENT
+  AD_VIEW
+  PURCHASE
+  ADMIN_GRANT
+}
+
+enum DataType {
+  PROMPT_METADATA
+  BEHAVIORAL_ANALYTICS
+  ENGAGEMENT_METRICS
+  STYLE_PREFERENCES
+  PERFORMANCE_DATA
+  DEVICE_INFO
+  LOCATION_DATA
+}
+
+enum ReportType {
+  SPAM
+  HARASSMENT
+  HATE_SPEECH
+  VIOLENCE
+  ADULT_CONTENT
+  COPYRIGHT
+  IMPERSONATION
+  ILLEGAL_CONTENT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+  ESCALATED
+}
+
+enum ModerationAction {
+  FLAG
+  HIDE
+  REMOVE
+  BAN_USER
+  WARN_USER
+  APPROVE
+  ESCALATE
+}

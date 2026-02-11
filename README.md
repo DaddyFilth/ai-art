@@ -376,6 +376,14 @@ See `.env.template` for complete list.
 
 ---
 
+## 📱 Google Play Store
+
+For Google Play Store submission documentation:
+- [Google Play Submission Guide](google-play/README.md)
+- Complete documentation for app store listing, data safety, content rating, and build instructions
+
+---
+
 ## 🤝 Contributing
 
 This is a proprietary platform. For enterprise licensing or partnership inquiries, contact:

@@ -219,14 +219,34 @@ SD_API_URL=http://localhost:7860
 ### 1. Clone Repository
 ```bash
 git clone <repository-url>
-cd ai-art-exchange
+cd ai-art
 ```
 
-### 2. Configure Environment
+### 2. Configure Environment (Automated)
+
+**Option A: Automated Setup (Recommended)**
+```bash
+# Run automated setup script
+node setup-env.js
+
+# Select environment type:
+# 1) Development - Auto-configures for localhost
+# 2) Production - Generates secure secrets, requires manual service configuration
+```
+
+The script will:
+- Generate cryptographically secure random secrets
+- Create `.env` file with sensible defaults
+- Configure for development or production
+- Create `.env.example` for reference
+
+**Option B: Manual Setup**
 ```bash
 cp .env.template .env
 # Edit .env with your configuration
 ```
+
+📖 **See [Setup Guide](docs/SETUP_GUIDE.md) for detailed instructions**
 
 ### 3. Start Services
 ```bash

@@ -307,8 +307,11 @@ docker-compose exec backend npx prisma db seed
    - Seed admin user
 
 4. **AI Service Integration**
-   - Configure AI API endpoint
-   - Set up API key
+   - Install Ollama: `curl -fsSL https://ollama.com/install.sh | sh`
+   - Pull vision model: `ollama pull llava`
+   - Install Stable Diffusion WebUI from https://github.com/AUTOMATIC1111/stable-diffusion-webui
+   - Run SD WebUI with API: `./webui.sh --api --listen`
+   - Configure endpoints in `.env` (AI_API_URL and SD_API_URL)
 
 5. **Testing**
    - Run security audits

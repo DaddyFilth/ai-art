@@ -272,7 +272,8 @@ export class AiService {
   }
 
   /**
-   * Call external AI generation API
+   * Call Ollama API for image generation
+   * Uses Ollama's local API with vision models
    */
   private async callAiGenerationApi(
     request: GenerationRequest,
@@ -283,49 +284,74 @@ export class AiService {
     fileSize: number;
     seed: string;
   }> {
-    // This is a placeholder for the actual AI generation API call
-    // In production, this would call services like:
-    // - Stability AI
-    // - Midjourney API
-    // - DALL-E
-    // - Stable Diffusion
+    // Ollama API endpoint for image generation
+    // Uses models like llava, bakllava, or other vision models
+    // Note: Ollama primarily supports text generation and vision understanding
+    // For actual image generation, you may need to integrate with Stable Diffusion WebUI
+    // or use Ollama with a custom endpoint that wraps SD
 
     try {
-      const response = await fetch(this.aiApiUrl, {
+      const ollamaUrl = this.aiApiUrl || 'http://localhost:11434';
+      const model = request.model || 'llava'; // Default to llava or your preferred model
+      
+      // Generate a seed for reproducibility
+      const seed = Math.floor(Math.random() * 1000000).toString();
+
+      // For Ollama, we'll use the /api/generate endpoint
+      // This is a text-to-image prompt that would work with SD integration
+      const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.aiApiKey}`,
         },
         body: JSON.stringify({
-          prompt: request.prompt,
-          negative_prompt: request.negativePrompt,
-          width: request.width || 1024,
-          height: request.height || 1024,
-          style: request.style,
-          model: request.model || 'default',
+          model: model,
+          prompt: this.buildOllamaPrompt(request),
+          stream: false,
+          options: {
+            seed: parseInt(seed),
+            temperature: 0.8,
+            num_predict: 512,
+          },
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`AI generation failed: ${response.statusText}`);
+        throw new Error(`Ollama API failed: ${response.statusText}`);
       }
 
       const result = await response.json();
 
-      return {
-        imageUrl: result.image_url,
-        thumbnailUrl: result.thumbnail_url,
-        watermarkUrl: result.watermark_url,
-        fileSize: result.file_size,
-        seed: result.seed,
-      };
+      // Since Ollama doesn't directly generate images, we need to handle this differently
+      // Option 1: Use Ollama response to generate via SD WebUI
+      // Option 2: Store the prompt and generate placeholder
+      // Option 3: Integrate with local Stable Diffusion instance
+      
+      // For now, we'll create a workflow that saves the Ollama-enhanced prompt
+      // and generates images via a local Stable Diffusion instance
+      const enhancedPrompt = result.response || request.prompt;
+      
+      // Call local Stable Diffusion API (typically running on port 7860)
+      const sdUrl = this.configService.get<string>('SD_API_URL', 'http://localhost:7860');
+      const sdResponse = await this.callStableDiffusionApi(sdUrl, {
+        prompt: enhancedPrompt,
+        negative_prompt: request.negativePrompt || '',
+        width: request.width || 1024,
+        height: request.height || 1024,
+        seed: parseInt(seed),
+        steps: 30,
+        cfg_scale: 7,
+        sampler_name: 'DPM++ 2M Karras',
+      });
+
+      return sdResponse;
     } catch (error) {
-      this.logger.error('AI generation API error:', error.message);
+      this.logger.error('Ollama/SD generation error:', error.message);
       
       // For development/demo purposes, return mock data
       // In production, this should throw the error
       if (process.env.NODE_ENV === 'development') {
+        this.logger.warn('Using mock data for development - configure Ollama and SD for production');
         return {
           imageUrl: `https://placeholder.ai/generated/${this.encryption.generateUUID()}.png`,
           thumbnailUrl: `https://placeholder.ai/thumbnail/${this.encryption.generateUUID()}.png`,
@@ -337,6 +363,100 @@ export class AiService {
 
       throw new BadRequestException('AI generation failed: ' + error.message);
     }
+  }
+
+  /**
+   * Build enhanced prompt using Ollama
+   */
+  private buildOllamaPrompt(request: GenerationRequest): string {
+    let prompt = `You are an expert AI art prompt engineer. Enhance and expand the following image generation prompt to create a detailed, high-quality description for Stable Diffusion. Keep it concise but descriptive.\n\nOriginal prompt: ${request.prompt}`;
+    
+    if (request.style) {
+      prompt += `\nStyle: ${request.style}`;
+    }
+    
+    prompt += `\n\nProvide only the enhanced prompt, no additional text:`;
+    
+    return prompt;
+  }
+
+  /**
+   * Call Stable Diffusion WebUI API for actual image generation
+   */
+  private async callStableDiffusionApi(
+    sdUrl: string,
+    params: {
+      prompt: string;
+      negative_prompt: string;
+      width: number;
+      height: number;
+      seed: number;
+      steps: number;
+      cfg_scale: number;
+      sampler_name: string;
+    },
+  ): Promise<{
+    imageUrl: string;
+    thumbnailUrl: string;
+    watermarkUrl: string;
+    fileSize: number;
+    seed: string;
+  }> {
+    try {
+      const response = await fetch(`${sdUrl}/sdapi/v1/txt2img`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+
+      if (!response.ok) {
+        throw new Error(`SD API failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      // SD returns base64 encoded images
+      // We need to save these to S3 or local storage
+      const imageData = result.images[0]; // Base64 string
+      const imageUrls = await this.saveGeneratedImage(imageData, params.seed.toString());
+
+      return {
+        imageUrl: imageUrls.full,
+        thumbnailUrl: imageUrls.thumbnail,
+        watermarkUrl: imageUrls.watermark,
+        fileSize: imageUrls.fileSize,
+        seed: params.seed.toString(),
+      };
+    } catch (error) {
+      this.logger.error('Stable Diffusion API error:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Save generated image to storage (S3 or local)
+   */
+  private async saveGeneratedImage(
+    base64Image: string,
+    seed: string,
+  ): Promise<{
+    full: string;
+    thumbnail: string;
+    watermark: string;
+    fileSize: number;
+  }> {
+    // TODO: Implement actual image saving to S3 or local storage
+    // For now, return placeholder URLs
+    const uuid = this.encryption.generateUUID();
+    
+    return {
+      full: `/uploads/generated/${uuid}-${seed}.png`,
+      thumbnail: `/uploads/thumbnails/${uuid}-${seed}.png`,
+      watermark: `/uploads/watermarked/${uuid}-${seed}.png`,
+      fileSize: 1024 * 1024, // Placeholder 1MB
+    };
   }
 
   /**

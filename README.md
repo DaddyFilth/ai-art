@@ -174,6 +174,47 @@ ai-art-exchange/
 - Node.js 20+ (for local development)
 - Stripe account
 - AWS account (for S3)
+- **Ollama** (for AI prompt enhancement)
+- **Stable Diffusion WebUI** (for image generation)
+
+### AI Generation Setup
+
+This platform uses **Ollama** for prompt enhancement and **Stable Diffusion WebUI** for local image generation.
+
+#### Install Ollama
+```bash
+# macOS/Linux
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Start Ollama
+ollama serve
+
+# Pull a vision model (in another terminal)
+ollama pull llava
+```
+
+#### Install Stable Diffusion WebUI
+```bash
+# Clone SD WebUI
+git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
+cd stable-diffusion-webui
+
+# Run with API enabled
+./webui.sh --api --listen
+
+# SD WebUI will be available at http://localhost:7860
+```
+
+#### Configure AI Services
+Update your `.env` file:
+```env
+# Ollama endpoint (default: http://localhost:11434)
+AI_API_URL=http://localhost:11434
+OLLAMA_MODEL=llava
+
+# Stable Diffusion WebUI endpoint (default: http://localhost:7860)
+SD_API_URL=http://localhost:7860
+```
 
 ### 1. Clone Repository
 ```bash

@@ -169,7 +169,15 @@ ai-art-exchange/
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Deployment Options
+
+This platform supports multiple deployment methods:
+
+1. **🐳 Docker Deployment (Recommended for Production)** - See instructions below
+2. **📱 Termux Deployment (Android)** - See [Termux README](TERMUX_README.md) and [Termux Deployment Guide](docs/TERMUX_DEPLOYMENT.md)
+3. **💻 Native Deployment** - Manual setup on Linux/macOS/Windows
+
+### Prerequisites (Docker Deployment)
 - Docker and Docker Compose
 - Node.js 20+ (for local development)
 - Stripe account
@@ -262,6 +270,45 @@ docker-compose exec backend npx prisma migrate deploy
 - Frontend: http://localhost
 - API: http://localhost/api/v1
 - API Docs: http://localhost/api/v1/docs
+
+---
+
+## 📱 Termux Deployment (Android)
+
+Deploy this platform on your Android device using Termux. Perfect for development, testing, and learning on mobile devices.
+
+### Quick Start on Termux
+
+```bash
+# Install Termux from F-Droid
+# https://f-droid.org/en/packages/com.termux/
+
+# In Termux, run:
+pkg update && pkg upgrade -y
+pkg install -y git
+cd ~
+git clone https://github.com/DaddyFilth/ai-art.git
+cd ai-art
+git checkout copilot/termux-deployment-branch
+chmod +x termux-setup.sh
+./termux-setup.sh
+```
+
+### Access on Termux
+- Frontend: http://localhost:3001
+- API: http://localhost:3000
+- Health: http://localhost:3000/health
+
+### Termux Documentation
+- 📖 **[Termux README](TERMUX_README.md)** - Quick reference guide
+- 📖 **[Termux Deployment Guide](docs/TERMUX_DEPLOYMENT.md)** - Complete deployment instructions
+
+### Termux Features
+✅ No Docker required - Uses native packages
+✅ Optimized for mobile devices
+✅ Local file storage
+✅ Automated setup scripts
+✅ Resource-constrained configuration
 
 ---
 

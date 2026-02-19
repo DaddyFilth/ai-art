@@ -304,8 +304,12 @@ ENABLE_CHALLENGES=true
   console.log('Generated Configuration:');
   console.log(`  • Environment: ${envType}`);
   console.log(`  • Admin Wallet ID: ${secrets.ADMIN_WALLET_ID}`);
-  console.log(`${colors.yellow}  • Admin password has been randomly generated and hashed${colors.reset}`);
-  console.log(`${colors.yellow}  • Create your first admin account via the API or database${colors.reset}\n`);
+  console.log(`\n${colors.yellow}⚠️  ADMIN ACCOUNT SETUP:${colors.reset}`);
+  console.log('  The admin password hash has been randomly generated for security.');
+  console.log('  To create your first admin account, use one of these methods:');
+  console.log('  1. Via database seed script: npm run prisma:seed');
+  console.log('  2. Via API registration endpoint with admin role');
+  console.log('  3. Via database: INSERT INTO users with role=ADMIN\n');
 
   if (isDevelopment) {
     console.log(`${colors.yellow}Development Setup Checklist:${colors.reset}`);

@@ -134,12 +134,22 @@ ufw enable
 - External AI services (Ollama, Stable Diffusion)
 - DNS resolution and package updates
 
-To restrict container egress:
+To implement fine-grained egress control (optional, advanced):
 ```bash
-# Example: Allow only specific external IPs/domains
-# This requires additional iptables rules or Docker network policies
-iptables -A DOCKER-USER -s 172.18.0.0/16 -d 54.230.0.0/16 -j ACCEPT  # AWS S3
-iptables -A DOCKER-USER -s 172.18.0.0/16 -d 0.0.0.0/0 -j DROP        # Block all other egress
+# Example template for restricting container egress with iptables
+# WARNING: Customize these rules for your specific services before applying!
+# The following is a TEMPLATE and will break the application if applied as-is.
+
+# First, allow required services (update IPs/CIDRs for your services):
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d <STRIPE_API_IP>/32 -j ACCEPT
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d <AWS_S3_IP>/16 -j ACCEPT
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d <AI_SERVICE_IP>/32 -j ACCEPT
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -p udp --dport 53 -j ACCEPT  # DNS
+# 
+# Then, block all other egress:
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d 0.0.0.0/0 -j DROP
+
+# For most deployments, network isolation via Nginx is sufficient.
 ```
 
 2. **Fail2Ban Configuration**

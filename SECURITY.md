@@ -195,7 +195,7 @@ Before going to production, verify:
 - [ ] Firewall is configured to allow only ports 80, 443, and 22
 - [ ] Database has a strong password and is not publicly accessible
 - [ ] Redis has a strong password and is not publicly accessible
-- [ ] Docker network is set to `internal: true`
+- [ ] Docker network uses bridge mode with only Nginx exposing ports
 - [ ] All containers run as non-root users
 - [ ] CORS is configured with only trusted origins
 - [ ] Rate limiting is properly configured

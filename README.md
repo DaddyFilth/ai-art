@@ -12,11 +12,17 @@
 
 AI Art Revenue Exchange is a production-ready, enterprise-grade SaaS platform that enables users to:
 
-- **Generate AI Digital Art** - Create stunning artwork using state-of-the-art AI models
+- **Generate AI Digital Art** - Create stunning artwork using state-of-the-art AI models (Ollama + Stable Diffusion, fully local)
 - **Sell Assets** - List artwork via auction or buy-it-now mechanisms
 - **Earn Tokens** - Participate in the in-game token economy
 - **Monetize Data** - Opt into data sharing for platform benefits
 - **Secure Transactions** - Enterprise-grade financial security
+
+### 🚀 Key Features
+- ✅ **No External API Keys Required** - All AI generation runs locally using Ollama and Stable Diffusion
+- ✅ **No Google AI Dependencies** - Complete control over your AI infrastructure
+- ✅ **Privacy First** - Your data stays on your servers
+- ✅ **Zero API Costs** - No per-generation charges or usage limits
 
 ---
 
@@ -179,9 +185,9 @@ ai-art-exchange/
 
 ### AI Generation Setup
 
-This platform uses **Ollama** for prompt enhancement and **Stable Diffusion WebUI** for local image generation.
+This platform uses **Ollama** for prompt enhancement and **Stable Diffusion WebUI** for local image generation. **No external API keys required!**
 
-#### Install Ollama
+#### Install Ollama (No API Key Needed)
 ```bash
 # macOS/Linux
 curl -fsSL https://ollama.com/install.sh | sh
@@ -193,7 +199,7 @@ ollama serve
 ollama pull llava
 ```
 
-#### Install Stable Diffusion WebUI
+#### Install Stable Diffusion WebUI (No API Key Needed)
 ```bash
 # Clone SD WebUI
 git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
@@ -205,11 +211,12 @@ cd stable-diffusion-webui
 # SD WebUI will be available at http://localhost:7860
 ```
 
-#### Configure AI Services
+#### Configure AI Services (No API Keys Required)
 Update your `.env` file:
 ```env
 # Ollama endpoint (default: http://localhost:11434)
 AI_API_URL=http://localhost:11434
+AI_API_KEY=not-required-for-ollama
 OLLAMA_MODEL=llava
 
 # Stable Diffusion WebUI endpoint (default: http://localhost:7860)

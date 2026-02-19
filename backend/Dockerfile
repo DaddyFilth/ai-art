@@ -30,7 +30,7 @@ FROM node:20-alpine AS production
 
 # Security: Run as non-root user
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 -G nodejs
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init

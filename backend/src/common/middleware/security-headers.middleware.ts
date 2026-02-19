@@ -1,6 +1,8 @@
 /**
  * Security Headers Middleware
  * Additional security headers beyond Helmet
+ * Note: X-XSS-Protection header has been removed as it's deprecated by modern browsers
+ * in favor of Content Security Policy (CSP), which we enforce via Helmet
  */
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
@@ -9,13 +11,10 @@ import { Request, Response, NextFunction } from 'express';
 @Injectable()
 export class SecurityHeadersMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    // Prevent MIME type sniffing
+    // Prevent MIME type sniffing (already set by Helmet, but redundant for defense-in-depth)
     res.setHeader('X-Content-Type-Options', 'nosniff');
     
-    // Enable XSS protection in browsers
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    
-    // Prevent clickjacking
+    // Prevent clickjacking (already set by Helmet)
     res.setHeader('X-Frame-Options', 'DENY');
     
     // Referrer policy

@@ -88,9 +88,10 @@ COOKIE_SECRET=$(generate_secret 64)
 REDIS_PASSWORD=$(generate_secret 32)
 ADMIN_WALLET_ID=$(generate_uuid)
 
-# Generate bcrypt hash for default admin password
+# Generate bcrypt hash for admin password (using random secure password)
+ADMIN_RANDOM_PASS=$(generate_secret 16)
 if command -v node &> /dev/null; then
-    ADMIN_PASSWORD_HASH=$(node -e "console.log(require('bcrypt').hashSync('admin123!@#', 12))" 2>/dev/null || echo '$2b$12$PLACEHOLDER_HASH')
+    ADMIN_PASSWORD_HASH=$(node -e "console.log(require('bcrypt').hashSync(process.argv[1], 12))" "$ADMIN_RANDOM_PASS" 2>/dev/null || echo '$2b$12$PLACEHOLDER_HASH')
 else
     ADMIN_PASSWORD_HASH='$2b$12$PLACEHOLDER_HASH'
 fi
@@ -282,7 +283,13 @@ echo ""
 echo "Generated Configuration:"
 echo "  • Environment: ${ENV_TYPE}"
 echo "  • Admin Wallet ID: ${ADMIN_WALLET_ID}"
-echo "  • Default Admin Password: admin123!@# (CHANGE THIS!)"
+echo ""
+echo -e "${YELLOW}⚠️  ADMIN ACCOUNT SETUP:${NC}"
+echo "  The admin password hash has been randomly generated for security."
+echo "  To create your first admin account, use one of these methods:"
+echo "  1. Via database seed script: npm run prisma:seed"
+echo "  2. Via API registration endpoint with admin role"
+echo "  3. Via database: INSERT INTO users with role=ADMIN"
 echo ""
 
 if [ "$ENV_TYPE" = "development" ]; then

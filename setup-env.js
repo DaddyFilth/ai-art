@@ -103,7 +103,8 @@ async function setup() {
     COOKIE_SECRET: generateSecret(64),
     REDIS_PASSWORD: generateSecret(32),
     ADMIN_WALLET_ID: generateUUID(),
-    ADMIN_PASSWORD_HASH: generatePasswordHash('admin123!@#'),
+    // Security: Generate a random secure password instead of hardcoded default
+    ADMIN_PASSWORD_HASH: generatePasswordHash(generateSecret(16)),
   };
 
   log.success('Secrets generated');
@@ -303,7 +304,12 @@ ENABLE_CHALLENGES=true
   console.log('Generated Configuration:');
   console.log(`  • Environment: ${envType}`);
   console.log(`  • Admin Wallet ID: ${secrets.ADMIN_WALLET_ID}`);
-  console.log(`  • Default Admin Password: admin123!@# ${colors.red}(CHANGE THIS!)${colors.reset}\n`);
+  console.log(`\n${colors.yellow}⚠️  ADMIN ACCOUNT SETUP:${colors.reset}`);
+  console.log('  The admin password hash has been randomly generated for security.');
+  console.log('  To create your first admin account, use one of these methods:');
+  console.log('  1. Via database seed script: npm run prisma:seed');
+  console.log('  2. Via API registration endpoint with admin role');
+  console.log('  3. Via database: INSERT INTO users with role=ADMIN\n');
 
   if (isDevelopment) {
     console.log(`${colors.yellow}Development Setup Checklist:${colors.reset}`);

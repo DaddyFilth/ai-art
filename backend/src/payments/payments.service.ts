@@ -358,6 +358,13 @@ export class PaymentsService {
   private async getStripeCustomerId(userId: string): Promise<string | null> {
     // This would typically be stored in the user record or a separate table
     // For now, we'll query Stripe by metadata
+    // Security: Validate userId format to prevent query injection
+    // UUIDs should only contain alphanumeric characters and hyphens
+    if (!/^[a-zA-Z0-9-]+$/.test(userId)) {
+      this.logger.warn(`Invalid userId format for Stripe search: ${userId}`);
+      return null;
+    }
+    
     const customers = await this.stripe.customers.search({
       query: `metadata['userId']:'${userId}'`,
     });

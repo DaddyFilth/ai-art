@@ -21,7 +21,7 @@ export default function GeneratePage() {
   const [style, setStyle] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const { user } = useAuth();
+  useAuth();
   const router = useRouter();
   const { toast } = useToast();
 

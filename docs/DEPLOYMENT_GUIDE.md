@@ -119,10 +119,37 @@ curl https://yourdomain.com/health
 1. **Firewall Configuration**
 ```bash
 # Allow only necessary ports
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
+ufw allow 22/tcp    # SSH (consider restricting to specific IPs)
+ufw allow 80/tcp    # HTTP (redirects to HTTPS)
+ufw allow 443/tcp   # HTTPS
 ufw enable
+
+# Optional: Block outbound traffic from specific containers
+# Use Docker network policies or iptables for fine-grained control
+```
+
+**Important**: The docker-compose network allows containers to make outbound connections for:
+- Stripe API calls (payment processing)
+- AWS S3 (file storage)
+- External AI services (Ollama, Stable Diffusion)
+- DNS resolution and package updates
+
+To implement fine-grained egress control (optional, advanced):
+```bash
+# Example template for restricting container egress with iptables
+# WARNING: Customize these rules for your specific services before applying!
+# The following is a TEMPLATE and will break the application if applied as-is.
+
+# First, allow required services (update IPs/CIDRs for your services):
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d <STRIPE_API_IP>/32 -j ACCEPT
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d <AWS_S3_IP>/16 -j ACCEPT
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d <AI_SERVICE_IP>/32 -j ACCEPT
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -p udp --dport 53 -j ACCEPT  # DNS
+# 
+# Then, block all other egress:
+# iptables -A DOCKER-USER -s 172.18.0.0/16 -d 0.0.0.0/0 -j DROP
+
+# For most deployments, network isolation via Nginx is sufficient.
 ```
 
 2. **Fail2Ban Configuration**
@@ -136,6 +163,17 @@ systemctl enable fail2ban
 - Use non-root containers (configured in Dockerfiles)
 - Enable Docker Content Trust
 - Regularly update base images
+- Containers have read-only root filesystems
+- Security options: `no-new-privileges:true` enabled
+- Health checks for all services
+
+**Network Isolation**: The application uses a dedicated Docker bridge network (`aiart-network`). Only the Nginx container exposes ports to the host. Backend, database, and Redis are isolated and not directly accessible from the internet.
+
+For additional security:
+- Consider using Docker secrets for sensitive environment variables
+- Enable Docker's built-in AppArmor/SELinux profiles
+- Implement egress filtering with iptables or network policies
+- Use Docker Content Trust to verify image integrity
 
 ### Nginx Configuration
 

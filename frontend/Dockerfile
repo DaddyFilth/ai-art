@@ -27,7 +27,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+    adduser --system --uid 1001 -G nodejs nextjs
 
 # Copy built application
 COPY --from=builder /app/public ./public

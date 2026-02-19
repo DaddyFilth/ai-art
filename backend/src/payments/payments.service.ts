@@ -46,6 +46,9 @@ export class PaymentsService {
     private readonly ledger: LedgerService,
   ) {
     const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
+    // Using Stripe API version 2023-10-16 for TypeScript compatibility
+    // The stripe package type definitions are pinned to this version
+    // TODO: Update to newer version when stripe package updates its types
     this.stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
       typescript: true,

@@ -40,6 +40,9 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
       
+      # Lint step continues on error due to known compatibility issue between
+      # ajv 8.18.0 (required for CVE-2025-69873 fix) and ESLint 8.x
+      # TODO: Migrate to ESLint 9 when dependencies are compatible
       - name: Lint code
         run: npm run lint
         continue-on-error: true
@@ -77,6 +80,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
+      # Lint step continues on error due to known compatibility issue between
+      # ajv 8.18.0 (required for CVE-2025-69873 fix) and ESLint 8.x
+      # TODO: Migrate to ESLint 9 when dependencies are compatible
       - name: Lint code
         run: npm run lint
         continue-on-error: true

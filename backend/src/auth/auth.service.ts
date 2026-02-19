@@ -411,6 +411,8 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(accessPayload);
+    // Type assertion needed: NestJS JWT v11 has stricter types, but string values
+    // like '7d' are valid JWT expiresIn values per jsonwebtoken spec
     const refreshToken = this.jwtService.sign(refreshPayload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d') as any,

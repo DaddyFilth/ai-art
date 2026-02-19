@@ -25,7 +25,7 @@ TWA allows you to package your web app as an Android app with minimal code.
 
 ### Prerequisites
 - Android Studio installed
-- JDK 11 or higher
+- JDK 17 or higher
 - Node.js and npm
 - Your web app deployed and accessible via HTTPS
 
@@ -398,12 +398,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       
       - name: Install Bubblewrap
@@ -413,7 +413,7 @@ jobs:
         run: bubblewrap build
         
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v6
         with:
           name: app-release
           path: app/build/outputs/bundle/release/app-release.aab

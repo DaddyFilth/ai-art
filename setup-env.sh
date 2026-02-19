@@ -149,7 +149,7 @@ STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET_HERE
 STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY_HERE
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY_HERE
 
-# AI Service (Ollama + Stable Diffusion)
+# AI Service (Ollama + Stable Diffusion) - No API key required!
 AI_API_URL=http://localhost:11434
 AI_API_KEY=not-required-for-ollama
 OLLAMA_MODEL=llava
@@ -230,7 +230,7 @@ STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET_HERE
 STRIPE_PUBLISHABLE_KEY=pk_live_YOUR_PUBLISHABLE_KEY_HERE
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_YOUR_PUBLISHABLE_KEY_HERE
 
-# AI Service (Ollama + Stable Diffusion) - CONFIGURE ENDPOINTS
+# AI Service (Ollama + Stable Diffusion) - No API key required!
 AI_API_URL=http://ollama-server:11434
 AI_API_KEY=not-required-for-ollama
 OLLAMA_MODEL=llava

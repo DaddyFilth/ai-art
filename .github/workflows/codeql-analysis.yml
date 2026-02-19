@@ -34,8 +34,8 @@ jobs:
         languages: ${{ matrix.language }}
         config-file: ./.github/codeql-config.yml
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+    # For JavaScript/TypeScript, no build step is needed
+    # CodeQL can analyze the source code directly
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

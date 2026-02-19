@@ -54,7 +54,8 @@ export class AiService {
       2,
     );
     // Detect if using Ollama Cloud based on API URL
-    this.isCloudOllama = this.aiApiUrl.includes('ollama.com') || this.aiApiUrl.includes('api.ollama');
+    this.isCloudOllama = this.aiApiUrl.startsWith('https://api.ollama.com') || 
+                         this.aiApiUrl.startsWith('https://ollama.com/api');
     
     if (this.isCloudOllama && !this.ollamaCloudApiKey) {
       this.logger.warn('Ollama Cloud URL detected but no API key provided. Set OLLAMA_CLOUD_API_KEY environment variable.');

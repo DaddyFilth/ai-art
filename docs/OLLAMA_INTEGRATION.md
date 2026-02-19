@@ -200,7 +200,7 @@ The WebUI will be available at:
 # Ollama Cloud Configuration
 AI_API_URL=https://api.ollama.com
 OLLAMA_MODEL=llama3.2
-OLLAMA_CLOUD_API_KEY=ollama_your_api_key_here
+OLLAMA_CLOUD_API_KEY=<YOUR_OLLAMA_API_KEY>
 
 # Stable Diffusion Configuration - No API key needed!
 SD_API_URL=http://localhost:7860

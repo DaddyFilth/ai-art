@@ -33,7 +33,7 @@ A repository administrator **must disable the default CodeQL setup** through Git
 #### Step-by-Step Instructions
 
 1. **Navigate to Repository Settings**
-   - Go to your repository on GitHub: `https://github.com/DaddyFilth/ai-art`
+   - Go to your repository on GitHub (you should already be there)
    - Click on **Settings** (requires admin access)
 
 2. **Access Code Security Settings**

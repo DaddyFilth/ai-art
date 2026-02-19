@@ -12,17 +12,17 @@
 
 AI Art Revenue Exchange is a production-ready, enterprise-grade SaaS platform that enables users to:
 
-- **Generate AI Digital Art** - Create stunning artwork using state-of-the-art AI models (Ollama + Stable Diffusion, fully local)
+- **Generate AI Digital Art** - Create stunning artwork using state-of-the-art AI models (Ollama Cloud or Self-Hosted + Stable Diffusion)
 - **Sell Assets** - List artwork via auction or buy-it-now mechanisms
 - **Earn Tokens** - Participate in the in-game token economy
 - **Monetize Data** - Opt into data sharing for platform benefits
 - **Secure Transactions** - Enterprise-grade financial security
 
 ### 🚀 Key Features
-- ✅ **No External API Keys Required** - All AI generation runs locally using Ollama and Stable Diffusion
+- ✅ **Flexible AI Deployment** - Use Ollama Cloud (hassle-free) or self-hosted (full control)
 - ✅ **No Google AI Dependencies** - Complete control over your AI infrastructure
-- ✅ **Privacy First** - Your data stays on your servers
-- ✅ **Zero API Costs** - No per-generation charges or usage limits
+- ✅ **Privacy First** - Choose between cloud convenience or local data control
+- ✅ **Cost Effective** - Cloud starting at $0 (free tier) or self-hosted for high volume
 
 ---
 

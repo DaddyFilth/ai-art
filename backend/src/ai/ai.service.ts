@@ -54,8 +54,15 @@ export class AiService {
       2,
     );
     // Detect if using Ollama Cloud based on API URL
-    this.isCloudOllama = this.aiApiUrl.startsWith('https://api.ollama.com') || 
-                         this.aiApiUrl.startsWith('https://ollama.com/api');
+    // Use URL parsing to ensure we only match the official Ollama domain
+    try {
+      const url = new URL(this.aiApiUrl);
+      this.isCloudOllama = url.hostname === 'api.ollama.com' || 
+                           (url.hostname === 'ollama.com' && url.pathname.startsWith('/api'));
+    } catch {
+      // Invalid URL, assume local
+      this.isCloudOllama = false;
+    }
     
     if (this.isCloudOllama && !this.ollamaCloudApiKey) {
       this.logger.warn('Ollama Cloud URL detected but no API key provided. Set OLLAMA_CLOUD_API_KEY environment variable.');

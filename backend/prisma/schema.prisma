@@ -321,6 +321,7 @@ model Wallet {
   // Relations
   outgoingTransactions Transaction[] @relation("FromWallet")
   incomingTransactions Transaction[] @relation("ToWallet")
+  ledgerEntries        LedgerEntry[]
   
   @@index([userId])
   @@index([type])

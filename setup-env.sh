@@ -88,9 +88,10 @@ COOKIE_SECRET=$(generate_secret 64)
 REDIS_PASSWORD=$(generate_secret 32)
 ADMIN_WALLET_ID=$(generate_uuid)
 
-# Generate bcrypt hash for default admin password
+# Generate bcrypt hash for admin password (using random secure password)
+ADMIN_RANDOM_PASS=$(generate_secret 16)
 if command -v node &> /dev/null; then
-    ADMIN_PASSWORD_HASH=$(node -e "console.log(require('bcrypt').hashSync('admin123!@#', 12))" 2>/dev/null || echo '$2b$12$PLACEHOLDER_HASH')
+    ADMIN_PASSWORD_HASH=$(node -e "console.log(require('bcrypt').hashSync(process.argv[1], 12))" "$ADMIN_RANDOM_PASS" 2>/dev/null || echo '$2b$12$PLACEHOLDER_HASH')
 else
     ADMIN_PASSWORD_HASH='$2b$12$PLACEHOLDER_HASH'
 fi
@@ -282,7 +283,8 @@ echo ""
 echo "Generated Configuration:"
 echo "  • Environment: ${ENV_TYPE}"
 echo "  • Admin Wallet ID: ${ADMIN_WALLET_ID}"
-echo "  • Default Admin Password: admin123!@# (CHANGE THIS!)"
+echo -e "  ${YELLOW}• Admin password has been randomly generated and hashed${NC}"
+echo -e "  ${YELLOW}• Create your first admin account via the API or database${NC}"
 echo ""
 
 if [ "$ENV_TYPE" = "development" ]; then

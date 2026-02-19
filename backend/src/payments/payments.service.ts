@@ -358,8 +358,10 @@ export class PaymentsService {
   private async getStripeCustomerId(userId: string): Promise<string | null> {
     // This would typically be stored in the user record or a separate table
     // For now, we'll query Stripe by metadata
+    // Security: Escape single quotes to prevent query injection
+    const escapedUserId = userId.replace(/'/g, "\\'");
     const customers = await this.stripe.customers.search({
-      query: `metadata['userId']:'${userId}'`,
+      query: `metadata['userId']:'${escapedUserId}'`,
     });
 
     return customers.data[0]?.id || null;

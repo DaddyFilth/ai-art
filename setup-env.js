@@ -103,7 +103,8 @@ async function setup() {
     COOKIE_SECRET: generateSecret(64),
     REDIS_PASSWORD: generateSecret(32),
     ADMIN_WALLET_ID: generateUUID(),
-    ADMIN_PASSWORD_HASH: generatePasswordHash('admin123!@#'),
+    // Security: Generate a random secure password instead of hardcoded default
+    ADMIN_PASSWORD_HASH: generatePasswordHash(generateSecret(16)),
   };
 
   log.success('Secrets generated');
@@ -303,7 +304,8 @@ ENABLE_CHALLENGES=true
   console.log('Generated Configuration:');
   console.log(`  • Environment: ${envType}`);
   console.log(`  • Admin Wallet ID: ${secrets.ADMIN_WALLET_ID}`);
-  console.log(`  • Default Admin Password: admin123!@# ${colors.red}(CHANGE THIS!)${colors.reset}\n`);
+  console.log(`${colors.yellow}  • Admin password has been randomly generated and hashed${colors.reset}`);
+  console.log(`${colors.yellow}  • Create your first admin account via the API or database${colors.reset}\n`);
 
   if (isDevelopment) {
     console.log(`${colors.yellow}Development Setup Checklist:${colors.reset}`);

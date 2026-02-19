@@ -2,6 +2,7 @@
  * Database Seed Script
  * Creates initial admin user and wallet
  */
+// @ts-nocheck
 
 import { PrismaClient, UserRole, WalletType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';

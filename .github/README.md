@@ -25,6 +25,22 @@ Automated continuous integration workflow that builds and tests the AI Art Reven
 
 ## CodeQL Configuration
 
+**⚠️ IMPORTANT: Default Setup Conflict**
+
+This repository uses an **Advanced CodeQL Configuration** (custom workflow + config file). This CANNOT coexist with GitHub's Default Setup.
+
+If you see this error:
+```
+CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled
+```
+
+**Solution:** Disable Default Setup in repository settings:
+1. Go to **Settings** → **Code security and analysis**
+2. Find **"Code scanning"** → **"CodeQL analysis"**
+3. Click **"Disable"** on the default setup
+
+📖 **See [CODEQL_SETUP.md](./CODEQL_SETUP.md) for detailed instructions and troubleshooting.**
+
 **Note:** The CodeQL workflow has been upgraded to use `github/codeql-action@v4` (February 2026). Version 3 will be deprecated in December 2026. The v4 action provides improved performance, enhanced security analysis, and runs on Node.js 24.
 
 The `codeql-config.yml` file provides custom configuration for CodeQL security scanning of the AI Art Revenue Exchange platform.

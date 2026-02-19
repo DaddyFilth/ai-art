@@ -20,7 +20,6 @@ Automated continuous integration workflow that builds and tests the AI Art Reven
 
 ### Security Scanning
 
-- **Codacy Security Scan** (`workflows/codacy.yml`): Automated code quality and security analysis
 - **CodeQL Security Analysis** (`workflows/codeql-analysis.yml`): GitHub's built-in security vulnerability scanning
 
 ## CodeQL Configuration

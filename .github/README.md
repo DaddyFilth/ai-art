@@ -25,6 +25,8 @@ Automated continuous integration workflow that builds and tests the AI Art Reven
 
 ## CodeQL Configuration
 
+**Note:** The CodeQL workflow has been upgraded to use `github/codeql-action@v4` (February 2026). Version 3 will be deprecated in December 2026. The v4 action provides improved performance, enhanced security analysis, and runs on Node.js 24.
+
 The `codeql-config.yml` file provides custom configuration for CodeQL security scanning of the AI Art Revenue Exchange platform.
 
 ### Configuration Highlights
@@ -51,7 +53,7 @@ If you're using a custom workflow file (`.github/workflows/codeql-analysis.yml`)
 
 ```yaml
 - name: Initialize CodeQL
-  uses: github/codeql-action/init@v3
+  uses: github/codeql-action/init@v4
   with:
     languages: javascript-typescript
     config-file: ./.github/codeql-config.yml

@@ -16,11 +16,12 @@ export class HealthController {
 
   @Get('health')
   async health() {
+    const version = process.env.npm_package_version || '1.0.0';
     return {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       environment: this.configService.get('NODE_ENV') || 'development',
-      version: '1.0.0',
+      version,
     };
   }
 
@@ -38,13 +39,15 @@ export class HealthController {
         },
       };
     } catch (error) {
+      // Don't expose internal error details in production
+      const isProduction = this.configService.get('NODE_ENV') === 'production';
       return {
         status: 'not_ready',
         timestamp: new Date().toISOString(),
         checks: {
           database: 'disconnected',
         },
-        error: error.message,
+        ...(isProduction ? {} : { error: error.message }),
       };
     }
   }

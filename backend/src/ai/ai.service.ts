@@ -438,7 +438,13 @@ export class AiService {
   }
 
   /**
-   * Save generated image to storage (S3 or local)
+   * Save generated image to storage
+   * Note: Currently returns placeholder URLs. 
+   * For production, implement S3 upload or local file storage:
+   * - Use AWS SDK to upload to S3 bucket (configured in AWS_S3_BUCKET env var)
+   * - Or save to persistent volume and serve via static file endpoint
+   * - Generate thumbnails using Sharp library
+   * - Apply watermarks to preview images
    */
   private async saveGeneratedImage(
     base64Image: string,
@@ -449,9 +455,15 @@ export class AiService {
     watermark: string;
     fileSize: number;
   }> {
-    // TODO: Implement actual image saving to S3 or local storage
-    // For now, return placeholder URLs
     const uuid = this.encryption.generateUUID();
+    
+    // Placeholder implementation - returns mock URLs
+    // Production implementation should:
+    // 1. Decode base64Image to buffer
+    // 2. Upload to S3 or save to local storage
+    // 3. Generate thumbnail using Sharp
+    // 4. Apply watermark for preview
+    // 5. Return actual file URLs
     
     return {
       full: `/uploads/generated/${uuid}-${seed}.png`,

@@ -1,0 +1,51 @@
+# CodeQL Configuration for AI Art Revenue Exchange Platform
+# This configuration optimizes security scanning for JavaScript/TypeScript codebase
+
+name: "AI Art Exchange CodeQL Config"
+
+# Use default queries (security and quality checks)
+disable-default-queries: false
+
+# Enable security-extended query suite for comprehensive coverage
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+# Specify paths to analyze (source code only)
+paths:
+  - frontend/src
+  - backend/src
+  - backend/prisma
+
+# Exclude paths that don't need scanning
+paths-ignore:
+  - "**/node_modules"
+  - "**/dist"
+  - "**/build"
+  - "**/.next"
+  - "**/coverage"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/*.test.js"
+  - "**/*.spec.js"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/__tests__/**"
+  - "**/__mocks__/**"
+  - "frontend/public/**"
+  - "backend/prisma/migrations/**"
+  - "docs/**"
+  - "legal/**"
+  - "google-play/**"
+  - "postman/**"
+
+# Query filters to customize scanning behavior
+query-filters:
+  # Example: Exclude specific queries if they produce false positives
+  # Uncomment and customize as needed based on scan results
+  # - exclude:
+  #     id: js/useless-assignment-to-local
+
+# Packs can be used to include additional query packs
+# packs:
+#   - codeql/javascript-queries

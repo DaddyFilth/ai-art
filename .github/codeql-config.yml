@@ -1,5 +1,7 @@
+---
 # CodeQL Configuration for AI Art Revenue Exchange Platform
-# This configuration optimizes security scanning for JavaScript/TypeScript codebase
+# This configuration optimizes security scanning for JavaScript/TypeScript
+# codebase
 
 name: "AI Art Exchange CodeQL Config"
 

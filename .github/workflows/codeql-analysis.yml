@@ -1,10 +1,23 @@
+---
+# CodeQL Security Analysis Workflow
+# 
+# IMPORTANT: This is an ADVANCED configuration that requires GitHub's default CodeQL setup to be DISABLED.
+# To disable default setup:
+#   1. Go to repository Settings
+#   2. Navigate to: Code security and analysis
+#   3. Find "CodeQL analysis" section
+#   4. Click "Disable" on the default setup
+#
+# If you see error "CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled",
+# it means default setup is still enabled and must be disabled first.
+
 name: "CodeQL Security Analysis"
 
 "on":
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   schedule:
     # Run at 2:00 AM UTC every Monday
     - cron: '0 2 * * 1'
@@ -22,31 +35,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript-typescript' ]
+        language: ['javascript-typescript']
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: |
-          backend/package-lock.json
-          frontend/package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v4
-      with:
-        languages: ${{ matrix.language }}
-        config-file: ./.github/codeql-config.yml
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          config-file: ./.github/codeql-config.yml
 
-    # For JavaScript/TypeScript, no build step is needed
-    # CodeQL can analyze the source code directly
+      # For JavaScript/TypeScript, no build step is needed
+      # CodeQL can analyze the source code directly
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v4
-      with:
-        category: "/language:${{ matrix.language }}"
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"

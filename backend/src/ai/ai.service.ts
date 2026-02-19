@@ -311,7 +311,7 @@ export class AiService {
           prompt: this.buildOllamaPrompt(request),
           stream: false,
           options: {
-            seed: parseInt(seed),
+            seed: parseInt(seed, 10),
             temperature: 0.8,
             num_predict: 512,
           },
@@ -340,7 +340,7 @@ export class AiService {
         negative_prompt: request.negativePrompt || '',
         width: request.width || 1024,
         height: request.height || 1024,
-        seed: parseInt(seed),
+        seed: parseInt(seed, 10),
         steps: 30,
         cfg_scale: 7,
         sampler_name: 'DPM++ 2M Karras',

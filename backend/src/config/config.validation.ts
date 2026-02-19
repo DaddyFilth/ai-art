@@ -48,9 +48,11 @@ export const configValidationSchema = Joi.object({
   STRIPE_WEBHOOK_SECRET: Joi.string().required().pattern(/^whsec_/),
   STRIPE_PUBLISHABLE_KEY: Joi.string().required().pattern(/^pk_/),
   
-  // AI Service
-  AI_API_KEY: Joi.string().required(),
+  // AI Service (Ollama - no API key required)
+  AI_API_KEY: Joi.string().optional().allow('', 'not-required-for-ollama'),
   AI_API_URL: Joi.string().uri().required(),
+  OLLAMA_MODEL: Joi.string().optional().default('llava'),
+  SD_API_URL: Joi.string().uri().optional(),
   
   // Admin Configuration
   ADMIN_WALLET_ID: Joi.string().uuid().required(),

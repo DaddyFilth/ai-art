@@ -2,15 +2,17 @@
 
 ## Overview
 
-The AI Art Exchange platform uses a hybrid approach for AI image generation:
-1. **Ollama** - For intelligent prompt enhancement and refinement
-2. **Stable Diffusion WebUI** - For actual image generation
+The AI Art Exchange platform uses a **fully local, API-key-free** approach for AI image generation:
+1. **Ollama** - For intelligent prompt enhancement and refinement (NO API key required)
+2. **Stable Diffusion WebUI** - For actual image generation (NO API key required)
 
 This local setup provides:
+- **No external API keys needed** - Everything runs locally
 - Complete data privacy
-- No API costs
+- No API costs or usage limits
 - Full control over models
 - Customizable generation parameters
+- No dependency on Google, OpenAI, or other cloud AI services
 
 ---
 
@@ -129,15 +131,15 @@ The WebUI will be available at:
 
 ### Environment Variables
 
-Update your `.env` file:
+Update your `.env` file (NO API KEYS REQUIRED):
 
 ```env
-# Ollama Configuration
+# Ollama Configuration - No API key needed!
 AI_API_URL=http://localhost:11434
 OLLAMA_MODEL=llava
 AI_API_KEY=not-required-for-ollama
 
-# Stable Diffusion Configuration
+# Stable Diffusion Configuration - No API key needed!
 SD_API_URL=http://localhost:7860
 SD_DEFAULT_STEPS=30
 SD_DEFAULT_CFG_SCALE=7
@@ -146,6 +148,8 @@ SD_DEFAULT_SAMPLER=DPM++ 2M Karras
 # Development mode (uses mock data if services unavailable)
 NODE_ENV=development
 ```
+
+**Note:** The `AI_API_KEY` field exists for compatibility but is not used by Ollama. You can set it to any value or leave it as `not-required-for-ollama`.
 
 ### Docker Configuration
 

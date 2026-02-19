@@ -28,7 +28,8 @@ export interface GenerationResult {
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   private readonly aiApiUrl: string;
-  private readonly aiApiKey: string;
+  private readonly ollamaModel: string;
+  private readonly sdApiUrl: string;
   private readonly adminClaimRatioEnabled: number;
   private readonly adminClaimRatioDisabled: number;
 
@@ -37,8 +38,9 @@ export class AiService {
     private readonly configService: ConfigService,
     private readonly encryption: EncryptionService,
   ) {
-    this.aiApiUrl = this.configService.get<string>('AI_API_URL');
-    this.aiApiKey = this.configService.get<string>('AI_API_KEY');
+    this.aiApiUrl = this.configService.get<string>('AI_API_URL', 'http://localhost:11434');
+    this.ollamaModel = this.configService.get<string>('OLLAMA_MODEL', 'llava');
+    this.sdApiUrl = this.configService.get<string>('SD_API_URL', 'http://localhost:7860');
     this.adminClaimRatioEnabled = this.configService.get<number>(
       'ADMIN_CLAIM_RATIO_ENABLED',
       5,
@@ -291,15 +293,14 @@ export class AiService {
     // or use Ollama with a custom endpoint that wraps SD
 
     try {
-      const ollamaUrl = this.aiApiUrl || 'http://localhost:11434';
-      const model = request.model || 'llava'; // Default to llava or your preferred model
+      const model = request.model || this.ollamaModel;
       
       // Generate a seed for reproducibility
       const seed = Math.floor(Math.random() * 1000000).toString();
 
       // For Ollama, we'll use the /api/generate endpoint
       // This is a text-to-image prompt that would work with SD integration
-      const response = await fetch(`${ollamaUrl}/api/generate`, {
+      const response = await fetch(`${this.aiApiUrl}/api/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -332,7 +333,7 @@ export class AiService {
       const enhancedPrompt = result.response || request.prompt;
       
       // Call local Stable Diffusion API (typically running on port 7860)
-      const sdUrl = this.configService.get<string>('SD_API_URL', 'http://localhost:7860');
+      const sdUrl = this.sdApiUrl;
       const sdResponse = await this.callStableDiffusionApi(sdUrl, {
         prompt: enhancedPrompt,
         negative_prompt: request.negativePrompt || '',

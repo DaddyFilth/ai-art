@@ -293,7 +293,6 @@ export class AiService {
     // or use Ollama with a custom endpoint that wraps SD
 
     try {
-      const ollamaUrl = this.aiApiUrl;
       const model = request.model || this.ollamaModel;
       
       // Generate a seed for reproducibility
@@ -301,7 +300,7 @@ export class AiService {
 
       // For Ollama, we'll use the /api/generate endpoint
       // This is a text-to-image prompt that would work with SD integration
-      const response = await fetch(`${ollamaUrl}/api/generate`, {
+      const response = await fetch(`${this.aiApiUrl}/api/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

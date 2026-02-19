@@ -1,6 +1,27 @@
-# GitHub Code Scanning Configuration
+# GitHub Workflows and Configuration
 
-This directory contains configuration files for GitHub's code scanning features.
+This directory contains configuration files for GitHub Actions workflows and code scanning features.
+
+## Workflows
+
+### CI/CD Build and Test (`workflows/ci.yml`)
+
+Automated continuous integration workflow that builds and tests the AI Art Revenue Exchange platform on every push and pull request.
+
+**Jobs:**
+- **Backend Build & Test**: Installs dependencies, generates Prisma client, lints, builds, and tests the NestJS backend
+- **Frontend Build & Test**: Installs dependencies, lints, type-checks, and builds the Next.js frontend
+- **Docker Build**: Verifies Docker images can be built for both backend and frontend
+
+**Triggers:**
+- Push to `main` or `develop` branches
+- Pull requests to `main` or `develop` branches
+- Manual workflow dispatch
+
+### Security Scanning
+
+- **Codacy Security Scan** (`workflows/codacy.yml`): Automated code quality and security analysis
+- **CodeQL Security Analysis** (`workflows/codeql-analysis.yml`): GitHub's built-in security vulnerability scanning
 
 ## CodeQL Configuration
 

@@ -20,10 +20,12 @@ Automated continuous integration workflow that builds and tests the AI Art Reven
 
 ### Security Scanning
 
-- **Codacy Security Scan** (`workflows/codacy.yml`): Automated code quality and security analysis
 - **CodeQL Security Analysis** (`workflows/codeql-analysis.yml`): GitHub's built-in security vulnerability scanning
+  - **Note:** Uses advanced configuration. See [CODEQL_SETUP.md](CODEQL_SETUP.md) if experiencing setup issues.
 
 ## CodeQL Configuration
+
+**⚠️ SETUP REQUIRED:** This repository uses advanced CodeQL configuration. If you encounter the error "CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled", please see **[CODEQL_SETUP.md](CODEQL_SETUP.md)** for resolution instructions.
 
 **Note:** The CodeQL workflow has been upgraded to use `github/codeql-action@v4` (February 2026). Version 3 will be deprecated in December 2026. The v4 action provides improved performance, enhanced security analysis, and runs on Node.js 24.
 

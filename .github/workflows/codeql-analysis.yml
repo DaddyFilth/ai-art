@@ -1,3 +1,21 @@
+---
+# ⚠️ IMPORTANT: CodeQL Default Setup Must Be Disabled
+#
+# This is an ADVANCED CodeQL configuration. If you see this error:
+#   "CodeQL analyses from advanced configurations cannot be processed 
+#    when the default setup is enabled"
+#
+# ACTION REQUIRED:
+# A repository administrator must disable GitHub's default CodeQL setup:
+# 1. Go to: Settings → Code security and analysis
+# 2. Find: CodeQL analysis section
+# 3. Disable the default setup
+#
+# See .github/CODEQL_SETUP.md for detailed instructions.
+#
+# GitHub's default setup and advanced workflows cannot coexist.
+# This repository requires the advanced setup for custom configurations.
+# ⚠️
 name: "CodeQL Security Analysis"
 
 "on":
@@ -27,6 +45,27 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Check CodeQL Configuration Status
+      run: |
+        echo "=================================================="
+        echo "CodeQL Advanced Configuration Check"
+        echo "=================================================="
+        echo ""
+        echo "This workflow uses ADVANCED CodeQL configuration."
+        echo ""
+        echo "⚠️  IMPORTANT: If this run fails with:"
+        echo "    'CodeQL analyses from advanced configurations"
+        echo "     cannot be processed when the default setup is enabled'"
+        echo ""
+        echo "ACTION REQUIRED by repository administrator:"
+        echo "  1. Go to: Settings → Code security and analysis"
+        echo "  2. Find: CodeQL analysis section"
+        echo "  3. Disable the default setup"
+        echo ""
+        echo "See .github/CODEQL_SETUP.md for detailed instructions."
+        echo "=================================================="
+        echo ""
 
     - name: Setup Node.js
       uses: actions/setup-node@v4

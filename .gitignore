@@ -57,7 +57,11 @@ temp/
 *.pem
 *.key
 *.crt
-ssl/
+*.csr
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+nginx/ssl/*.csr
 
 # Uploads
 uploads/

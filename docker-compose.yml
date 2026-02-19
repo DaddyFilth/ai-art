@@ -61,7 +61,8 @@ services:
       AWS_REGION: ${AWS_REGION}
       AI_API_URL: ${AI_API_URL:-http://host.docker.internal:11434}
       AI_API_KEY: ${AI_API_KEY:-not-required-for-ollama}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-llava}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      OLLAMA_CLOUD_API_KEY: ${OLLAMA_CLOUD_API_KEY:-}
       SD_API_URL: ${SD_API_URL:-http://host.docker.internal:7860}
       ADMIN_WALLET_ID: ${ADMIN_WALLET_ID}
     depends_on:

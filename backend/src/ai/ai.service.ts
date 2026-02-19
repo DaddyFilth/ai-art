@@ -30,9 +30,11 @@ export class AiService {
   private readonly logger = new Logger(AiService.name);
   private readonly aiApiUrl: string;
   private readonly ollamaModel: string;
+  private readonly ollamaCloudApiKey: string;
   private readonly sdApiUrl: string;
   private readonly adminClaimRatioEnabled: number;
   private readonly adminClaimRatioDisabled: number;
+  private readonly isCloudOllama: boolean;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -40,7 +42,8 @@ export class AiService {
     private readonly encryption: EncryptionService,
   ) {
     this.aiApiUrl = this.configService.get<string>('AI_API_URL', 'http://localhost:11434');
-    this.ollamaModel = this.configService.get<string>('OLLAMA_MODEL', 'llava');
+    this.ollamaModel = this.configService.get<string>('OLLAMA_MODEL', 'llama3.2');
+    this.ollamaCloudApiKey = this.configService.get<string>('OLLAMA_CLOUD_API_KEY', '');
     this.sdApiUrl = this.configService.get<string>('SD_API_URL', 'http://localhost:7860');
     this.adminClaimRatioEnabled = this.configService.get<number>(
       'ADMIN_CLAIM_RATIO_ENABLED',
@@ -50,6 +53,22 @@ export class AiService {
       'ADMIN_CLAIM_RATIO_DISABLED',
       2,
     );
+    // Detect if using Ollama Cloud based on API URL
+    // Use URL parsing to ensure we only match the official Ollama domain
+    try {
+      const url = new URL(this.aiApiUrl);
+      this.isCloudOllama = url.hostname === 'api.ollama.com' || 
+                           (url.hostname === 'ollama.com' && url.pathname.startsWith('/api'));
+    } catch {
+      // Invalid URL, assume local
+      this.isCloudOllama = false;
+    }
+    
+    if (this.isCloudOllama && !this.ollamaCloudApiKey) {
+      this.logger.warn('Ollama Cloud URL detected but no API key provided. Set OLLAMA_CLOUD_API_KEY environment variable.');
+    }
+    
+    this.logger.log(`Ollama configured: ${this.isCloudOllama ? 'Cloud' : 'Local'} mode at ${this.aiApiUrl}`);
   }
 
   /**
@@ -299,13 +318,21 @@ export class AiService {
       // Generate a secure seed for reproducibility
       const seed = crypto.randomBytes(4).readUInt32BE(0).toString();
 
+      // Build headers for API request
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add authentication for Ollama Cloud
+      if (this.isCloudOllama && this.ollamaCloudApiKey) {
+        headers['Authorization'] = `Bearer ${this.ollamaCloudApiKey}`;
+      }
+
       // For Ollama, we'll use the /api/generate endpoint
       // This is a text-to-image prompt that would work with SD integration
       const response = await fetch(`${this.aiApiUrl}/api/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           model: model,
           prompt: this.buildOllamaPrompt(request),

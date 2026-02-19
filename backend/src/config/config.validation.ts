@@ -48,10 +48,13 @@ export const configValidationSchema = Joi.object({
   STRIPE_WEBHOOK_SECRET: Joi.string().required().pattern(/^whsec_/),
   STRIPE_PUBLISHABLE_KEY: Joi.string().required().pattern(/^pk_/),
   
-  // AI Service (Ollama - no API key required)
+  // AI Service (Ollama - cloud or local)
+  // For Ollama Cloud: Set AI_API_URL to https://api.ollama.com and provide API key
+  // For Local Ollama: Set AI_API_URL to http://localhost:11434 (no API key needed)
   AI_API_KEY: Joi.string().optional().allow('', 'not-required-for-ollama'),
   AI_API_URL: Joi.string().uri().required(),
-  OLLAMA_MODEL: Joi.string().optional().default('llava'),
+  OLLAMA_MODEL: Joi.string().optional().default('llama3.2'),
+  OLLAMA_CLOUD_API_KEY: Joi.string().optional().allow(''),
   SD_API_URL: Joi.string().uri().optional(),
   
   // Admin Configuration

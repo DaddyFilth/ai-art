@@ -28,6 +28,7 @@ import { AdminModule } from './admin/admin.module';
 import { JobsModule } from './jobs/jobs.module';
 import { LedgerModule } from './ledger/ledger.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { HealthModule } from './health/health.module';
 
 // Common
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -103,6 +104,7 @@ import { configValidationSchema } from './config/config.validation';
     JobsModule,
     LedgerModule,
     AnalyticsModule,
+    HealthModule,
   ],
   providers: [
     // Global Guards

@@ -120,7 +120,7 @@ async function bootstrap() {
   // ==================== API PREFIX ====================
   
   app.setGlobalPrefix('api/v1', {
-    exclude: ['health', 'metrics'],
+    exclude: ['health', 'health/ready', 'health/live', 'metrics'],
   });
 
   // ==================== GRACEFUL SHUTDOWN ====================
@@ -149,13 +149,15 @@ async function bootstrap() {
 }
 
 // Handle uncaught errors
+const errorLogger = new Logger('ErrorHandler');
+
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  errorLogger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  errorLogger.error('Uncaught Exception:', error);
   process.exit(1);
 });
 

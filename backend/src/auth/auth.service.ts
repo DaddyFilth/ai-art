@@ -357,8 +357,10 @@ export class AuthService {
       resetExpiry
     );
 
-    // TODO: Send email with reset link
-    this.logger.log(`Password reset requested for: ${user.id}`);
+    // Note: Email service integration required for production
+    // Configure email service (SendGrid, AWS SES, etc.) and implement email sending
+    this.logger.log(`Password reset requested for user: ${user.id}`);
+    this.logger.warn(`Password reset link (configure email service to send): /reset-password?token=${resetToken}`);
   }
 
   /**

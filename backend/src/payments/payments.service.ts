@@ -247,8 +247,8 @@ export class PaymentsService {
     } else if (type === 'token_purchase') {
       // Process token purchase
       const totalTokens =
-        parseInt(tokenAmount) +
-        parseInt(paymentIntent.metadata.bonusTokens || '0');
+        parseInt(tokenAmount, 10) +
+        parseInt(paymentIntent.metadata.bonusTokens || '0', 10);
 
       await this.prisma.$transaction(async (tx) => {
         // Update wallet token balance
@@ -272,8 +272,8 @@ export class PaymentsService {
             metadata: {
               stripePaymentId: paymentIntent.id,
               packageId,
-              baseTokens: parseInt(tokenAmount),
-              bonusTokens: parseInt(paymentIntent.metadata.bonusTokens || '0'),
+              baseTokens: parseInt(tokenAmount, 10),
+              bonusTokens: parseInt(paymentIntent.metadata.bonusTokens || '0', 10),
             },
           },
         });

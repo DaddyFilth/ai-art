@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: ${{ matrix.component }}/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci ${{ matrix.component == 'backend' && '--legacy-peer-deps' || '' }}
 
       - name: Generate Prisma Client (backend only)
         if: matrix.component == 'backend'
@@ -91,6 +91,8 @@ jobs:
   secret-scanning-review:
     name: Secret scanning review
     runs-on: ubuntu-latest
+    # Only run if the secret token is configured
+    if: ${{ secrets.SECRET_SCAN_REVIEW_GITHUB_TOKEN != '' }}
     steps:
       # Note: This job requires SECRET_SCAN_REVIEW_GITHUB_TOKEN to be configured
       # in repository secrets with appropriate permissions for secret scanning

@@ -25,7 +25,9 @@ import { MatureContentGuard } from './guards/mature-content.guard';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRATION', '15m'),
+          // Type assertion needed: NestJS JWT v11 has stricter types, but string values
+          // like '15m' are valid JWT expiresIn values per jsonwebtoken spec
+          expiresIn: configService.get<string>('JWT_EXPIRATION', '15m') as any,
           issuer: 'ai-art-exchange',
           audience: 'ai-art-exchange-api',
         },

@@ -46,7 +46,7 @@ export default function GeneratePage() {
         style,
       });
 
-      const { asset, ownershipType, isAdminClaimed } = response.data.data;
+      const { asset, isAdminClaimed } = response.data.data;
       setGeneratedImage(asset.imageUrl);
 
       toast({

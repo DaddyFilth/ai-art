@@ -24,8 +24,8 @@ Our platform implements multiple layers of security:
 - **Rate Limiting**: Multi-tier rate limiting (general, auth, API)
 - **Input Validation**: Whitelist-based validation on all inputs
 - **CSRF Protection**: Cross-Site Request Forgery protection enabled
-- **XSS Protection**: X-XSS-Protection and X-Content-Type-Options headers
-- **Helmet.js**: Comprehensive security headers
+- **Security Headers**: Comprehensive headers via Helmet.js (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
+- **Query Injection Protection**: Parameterized queries and input sanitization throughout the application
 
 ### Infrastructure Security
 - **Docker Isolation**: Containers run as non-root users
@@ -37,9 +37,10 @@ Our platform implements multiple layers of security:
 ### Data Security
 - **Encryption at Rest**: AES-256 encryption for sensitive data
 - **Encryption in Transit**: TLS 1.3 for all network communication
-- **Secret Management**: Environment-based secrets, never hardcoded
+- **Secret Management**: Environment-based secrets with cryptographically secure random generation, never hardcoded
 - **Database Security**: Prepared statements, parameterized queries (via Prisma ORM)
-- **Password Hashing**: bcrypt with strong work factor
+- **Password Hashing**: bcrypt with strong work factor (12 rounds)
+- **Input Sanitization**: Escaping and validation of all user inputs to prevent injection attacks
 
 ### Authentication & Authorization
 - **JWT Tokens**: Short-lived access tokens (15 minutes)

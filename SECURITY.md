@@ -47,6 +47,12 @@ Our platform implements multiple layers of security:
 - **Role-Based Access Control**: Fine-grained permissions system
 - **Session Management**: Redis-backed session store with secure cookies
 
+### Automated Security Scanning
+- **CodeQL Analysis**: Automated code scanning for vulnerabilities and security issues
+- **Security-Extended Queries**: Enhanced security query suite for comprehensive coverage
+- **Continuous Monitoring**: Automated scanning on every push and pull request
+- **Custom Configuration**: Optimized scanning for JavaScript/TypeScript codebase (see [.github/README.md](.github/README.md))
+
 ## Reporting a Vulnerability
 
 We take all security vulnerabilities seriously and appreciate responsible disclosure.

@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../common/services/encryption.service';
 import { User, Asset, OwnershipType } from '@prisma/client';
+import * as crypto from 'crypto';
 
 export interface GenerationRequest {
   prompt: string;
@@ -294,8 +295,8 @@ export class AiService {
       const ollamaUrl = this.aiApiUrl || 'http://localhost:11434';
       const model = request.model || 'llava'; // Default to llava or your preferred model
       
-      // Generate a seed for reproducibility
-      const seed = Math.floor(Math.random() * 1000000).toString();
+      // Generate a secure seed for reproducibility
+      const seed = crypto.randomBytes(4).readUInt32BE(0).toString();
 
       // For Ollama, we'll use the /api/generate endpoint
       // This is a text-to-image prompt that would work with SD integration
@@ -357,7 +358,7 @@ export class AiService {
           thumbnailUrl: `https://placeholder.ai/thumbnail/${this.encryption.generateUUID()}.png`,
           watermarkUrl: `https://placeholder.ai/watermark/${this.encryption.generateUUID()}.png`,
           fileSize: 1024 * 1024, // 1MB
-          seed: Math.floor(Math.random() * 1000000).toString(),
+          seed: crypto.randomBytes(4).readUInt32BE(0).toString(),
         };
       }
 

@@ -28,15 +28,15 @@
     "docker:build": "docker build -t ai-art-exchange-api ."
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^11.0.15",
+    "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
     "@nestjs/schedule": "^5.0.0",
-    "@nestjs/throttler": "^6.0.0",
-    "@nestjs/config": "^4.0.3",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/throttler": "^6.0.0",
     "@prisma/client": "^5.8.0",
     "@types/bcrypt": "^5.0.2",
     "@types/compression": "^1.7.5",
@@ -48,6 +48,7 @@
     "@types/passport-jwt": "^4.0.0",
     "@types/passport-local": "^1.0.38",
     "@types/uuid": "^9.0.7",
+    "2fa": "^0.1.2",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
@@ -61,6 +62,7 @@
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
+    "otplib": "^13.3.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
@@ -102,10 +104,5 @@
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
-  },
-  "overrides": {
-    "tar": "^7.5.4",
-    "minimatch": "^10.2.1",
-    "ajv": "^8.18.0"
   }
 }

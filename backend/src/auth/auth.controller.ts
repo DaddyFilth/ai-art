@@ -33,6 +33,7 @@ class RegisterDto {
 class LoginDto {
   email: string;
   password: string;
+  twoFactorCode?: string;
 }
 
 class ChangePasswordDto {
@@ -51,6 +52,10 @@ class PasswordResetRequestDto {
 class PasswordResetDto {
   token: string;
   newPassword: string;
+}
+
+class Enable2faDto {
+  code: string;
 }
 
 @ApiTags('Authentication')
@@ -90,13 +95,14 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(
+    @CurrentUser() user: User,
     @Body() dto: LoginDto,
     @Ip() ip: string,
     @Headers('user-agent') userAgent: string,
   ) {
     const result = await this.authService.login(
-      dto.email,
-      dto.password,
+      user,
+      dto.twoFactorCode,
       ip,
       userAgent,
     );
@@ -106,6 +112,7 @@ export class AuthController {
       data: {
         user: result.user,
         tokens: result.tokens,
+        is2faRequired: result.is2faRequired
       },
     };
   }
@@ -206,5 +213,35 @@ export class AuthController {
       success: true,
       message: 'Password reset successful',
     };
+  }
+
+  @Post('2fa/generate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate 2FA secret' })
+  @ApiResponse({ status: 200, description: '2FA secret generated' })
+  async generate2fa(@CurrentUser() user: User) {
+    const result = await this.authService.generate2fa(user);
+    return { success: true, data: result };
+  }
+
+  @Post('2fa/enable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enable 2FA' })
+  @ApiResponse({ status: 200, description: '2FA enabled successfully' })
+  async enable2fa(@CurrentUser() user: User, @Body() dto: Enable2faDto) {
+    await this.authService.enable2fa(user, dto.code);
+    return { success: true, message: "2FA enabled successfully" };
+  }
+
+  @Post('2fa/disable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Disable 2FA' })
+  @ApiResponse({ status: 200, description: '2FA disabled successfully' })
+  async disable2fa(@CurrentUser() user: User) {
+    await this.authService.disable2fa(user);
+    return { success: true, message: "2FA disabled successfully" };
   }
 }

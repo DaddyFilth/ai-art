@@ -18,6 +18,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { EncryptionService } from '../common/services/encryption.service';
 import { User, UserRole } from '@prisma/client';
+import * as otplib from 'otplib';
+import * as twofa from '2fa';
 
 export interface TokenPayload {
   sub: string;
@@ -123,63 +125,19 @@ export class AuthService {
    * Authenticate user with email/password
    */
   async login(
-    email: string,
-    password: string,
+    user: User,
+    twoFactorCode?: string,
     ipAddress?: string,
     userAgent?: string
-  ): Promise<{ user: Partial<User>; tokens: AuthTokens }> {
-    // Find user by email
-    const user = await this.prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
-
-    if (!user) {
-      // Use constant-time comparison to prevent timing attacks
-      await bcrypt.compare(password, '$2b$12$' + 'a'.repeat(53));
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    // Check if account is locked
-    if (user.lockedUntil && user.lockedUntil > new Date()) {
-      const remainingMinutes = Math.ceil(
-        (user.lockedUntil.getTime() - Date.now()) / 60000
-      );
-      throw new ForbiddenException(
-        `Account locked. Try again in ${remainingMinutes} minutes.`
-      );
-    }
-
-    // Check if account is banned
-    if (user.isBanned) {
-      throw new ForbiddenException('Account has been suspended');
-    }
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-    if (!isPasswordValid) {
-      // Increment failed login attempts
-      const failedAttempts = user.failedLoginAttempts + 1;
-      const shouldLock = failedAttempts >= this.maxLoginAttempts;
-
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          failedLoginAttempts: failedAttempts,
-          lockedUntil: shouldLock
-            ? new Date(Date.now() + this.lockoutDuration * 1000)
-            : null,
-        },
-      });
-
-      if (shouldLock) {
-        this.logger.warn(`Account locked due to failed attempts: ${user.id}`);
-        throw new ForbiddenException(
-          'Too many failed attempts. Account locked for 15 minutes.'
-        );
+  ): Promise<{ user: Partial<User>; tokens: AuthTokens, is2faRequired?: boolean }> {
+    if (user.isMfaEnabled) {
+      if (!twoFactorCode) {
+        return { user: this.sanitizeUser(user), tokens: null, is2faRequired: true };
       }
-
-      throw new UnauthorizedException('Invalid credentials');
+      const isValid = this.verify2faCode(user, twoFactorCode);
+      if (!isValid) {
+        throw new UnauthorizedException('Invalid 2FA code');
+      }
     }
 
     // Reset failed attempts and update login info
@@ -388,6 +346,42 @@ export class AuthService {
     await this.redis.del(`password-reset:${token}`);
 
     this.logger.log(`Password reset completed for: ${resetData.userId}`);
+  }
+
+  async generate2fa(user: User): Promise<{ secret: string; qrCodeUrl: string }> {
+    const secret = otplib.authenticator.generateSecret();
+    const otpauth = otplib.authenticator.keyuri(user.email, 'AI Art Exchange', secret);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { mfaSecret: this.encryption.encrypt(secret) },
+    });
+
+    const qrCodeUrl = await twofa.qrCode(otpauth);
+
+    return { secret, qrCodeUrl };
+  }
+
+  async enable2fa(user: User, code: string): Promise<void> {
+    if (!this.verify2faCode(user, code)) {
+      throw new UnauthorizedException('Invalid 2FA code');
+    }
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { isMfaEnabled: true },
+    });
+  }
+
+  async disable2fa(user: User): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { isMfaEnabled: false, mfaSecret: null },
+    });
+  }
+
+  private verify2faCode(user: User, code: string): boolean {
+    const secret = this.encryption.decrypt(user.mfaSecret);
+    return otplib.authenticator.verify({ token: code, secret });
   }
 
   /**

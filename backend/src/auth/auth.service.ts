@@ -130,7 +130,7 @@ export class AuthService {
     ipAddress?: string,
     userAgent?: string
   ): Promise<{ user: Partial<User>; tokens: AuthTokens, is2faRequired?: boolean }> {
-    if (user.isMfaEnabled) {
+    if (user.mfaEnabled) {
       if (!twoFactorCode) {
         return { user: this.sanitizeUser(user), tokens: null, is2faRequired: true };
       }
@@ -354,7 +354,7 @@ export class AuthService {
 
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { mfaSecret: this.encryption.encrypt(secret) },
+      data: { mfaSecret: this.encryption.encrypt(secret) as any },
     });
 
     const qrCodeUrl = await twofa.qrCode(otpauth);
@@ -368,19 +368,19 @@ export class AuthService {
     }
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { isMfaEnabled: true },
+      data: { mfaEnabled: true },
     });
   }
 
   async disable2fa(user: User): Promise<void> {
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { isMfaEnabled: false, mfaSecret: null },
+      data: { mfaEnabled: false, mfaSecret: null },
     });
   }
 
   private verify2faCode(user: User, code: string): boolean {
-    const secret = this.encryption.decrypt(user.mfaSecret);
+    const secret = this.encryption.decrypt(user.mfaSecret as any);
     return otplib.authenticator.verify({ token: code, secret });
   }
 

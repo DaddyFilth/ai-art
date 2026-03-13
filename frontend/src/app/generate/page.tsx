@@ -22,7 +22,6 @@ export default function GeneratePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   useAuth();
-  const router = useRouter();
   const { toast } = useToast();
 
   const handleGenerate = async () => {

@@ -18,7 +18,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { EncryptionService } from '../common/services/encryption.service';
 import { User, UserRole } from '@prisma/client';
-import * as otplib from 'otplib';
+import { authenticator } from 'otplib';
 import * as twofa from '2fa';
 
 export interface TokenPayload {
@@ -130,7 +130,7 @@ export class AuthService {
     ipAddress?: string,
     userAgent?: string
   ): Promise<{ user: Partial<User>; tokens: AuthTokens, is2faRequired?: boolean }> {
-    if (user.isMfaEnabled) {
+    if (user.mfaEnabled) {
       if (!twoFactorCode) {
         return { user: this.sanitizeUser(user), tokens: null, is2faRequired: true };
       }
@@ -349,12 +349,12 @@ export class AuthService {
   }
 
   async generate2fa(user: User): Promise<{ secret: string; qrCodeUrl: string }> {
-    const secret = otplib.authenticator.generateSecret();
-    const otpauth = otplib.authenticator.keyuri(user.email, 'AI Art Exchange', secret);
+    const secret = authenticator.generateSecret();
+    const otpauth = authenticator.keyuri(user.email, 'AI Art Exchange', secret);
 
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { mfaSecret: this.encryption.encrypt(secret) },
+      data: { mfaSecret: JSON.stringify(this.encryption.encrypt(secret)) },
     });
 
     const qrCodeUrl = await twofa.qrCode(otpauth);
@@ -368,20 +368,20 @@ export class AuthService {
     }
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { isMfaEnabled: true },
+      data: { mfaEnabled: true },
     });
   }
 
   async disable2fa(user: User): Promise<void> {
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { isMfaEnabled: false, mfaSecret: null },
+      data: { mfaEnabled: false, mfaSecret: null },
     });
   }
 
   private verify2faCode(user: User, code: string): boolean {
-    const secret = this.encryption.decrypt(user.mfaSecret);
-    return otplib.authenticator.verify({ token: code, secret });
+    const secret = this.encryption.decrypt(JSON.parse(user.mfaSecret as string));
+    return authenticator.verify({ token: code, secret });
   }
 
   /**

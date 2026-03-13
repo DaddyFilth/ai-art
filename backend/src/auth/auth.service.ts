@@ -18,7 +18,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { EncryptionService } from '../common/services/encryption.service';
 import { User, UserRole } from '@prisma/client';
-import * as otplib from 'otplib';
+import { authenticator } from 'otplib';
 import * as twofa from '2fa';
 
 export interface TokenPayload {
@@ -349,8 +349,8 @@ export class AuthService {
   }
 
   async generate2fa(user: User): Promise<{ secret: string; qrCodeUrl: string }> {
-    const secret = otplib.authenticator.generateSecret();
-    const otpauth = otplib.authenticator.keyuri(user.email, 'AI Art Exchange', secret);
+    const secret = authenticator.generateSecret();
+    const otpauth = authenticator.keyuri(user.email, 'AI Art Exchange', secret);
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -381,7 +381,7 @@ export class AuthService {
 
   private verify2faCode(user: User, code: string): boolean {
     const secret = this.encryption.decrypt(user.mfaSecret as any);
-    return otplib.authenticator.verify({ token: code, secret });
+    return authenticator.verify({ token: code, secret });
   }
 
   /**

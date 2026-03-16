@@ -7,7 +7,7 @@ import { Injectable, Logger, ForbiddenException, BadRequestException } from '@ne
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../common/services/encryption.service';
 import { User, VerificationStatus } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 export interface AgeVerificationInput {
   documentType: string;

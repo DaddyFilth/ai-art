@@ -2,7 +2,7 @@
 
 ## Enterprise-Grade SaaS Platform for AI Art Generation and Monetization
 
-[![Security](https://img.shields.io/badge/Security-Zero%20Trust-blue)](https://)
+[![Security](https://img.shields.io/badge/Security-Zero%20Trust-blue)](SECURITY.md)
 [![License](https://img.shields.io/badge/License-Proprietary-red)](https://)
 [![Docker](https://img.shields.io/badge/Docker-Ready-green)](https://)
 
